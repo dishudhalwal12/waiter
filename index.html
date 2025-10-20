@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Krishna's Waiter App</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            border: 'hsl(var(--border))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            card: 'hsl(var(--card))',
+            'card-foreground': 'hsl(var(--card-foreground))',
+            primary: {
+              DEFAULT: 'hsl(var(--primary))',
+              foreground: 'hsl(var(--primary-foreground))',
+            },
+            muted: {
+              DEFAULT: 'hsl(var(--muted))',
+              foreground: 'hsl(var(--muted-foreground))',
+            },
+            ring: 'hsl(var(--ring))',
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out forwards',
+            'slide-in-bottom': 'slideInBottom 0.4s ease-out forwards',
+            'listening-pulse': 'listeningPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              'from': { opacity: 0 },
+              'to': { opacity: 1 },
+            },
+            slideInBottom: {
+              'from': { opacity: 0, transform: 'translateY(20px)' },
+              'to': { opacity: 1, transform: 'translateY(0)' },
+            },
+            listeningPulse: {
+              '0%, 100%': { boxShadow: '0 0 0 0 hsl(var(--primary) / 0.4)' },
+              '50%': { boxShadow: '0 0 0 12px hsl(var(--primary) / 0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+        --background: 0 0% 0%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 11%;
+        --card-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 0 0% 9%;
+        --border: 0 0% 20%;
+        --muted: 0 0% 11%;
+        --muted-foreground: 0 0% 63.9%;
+        --ring: 0 0% 14.9%;
+    }
+    html {
+      scroll-padding-top: 220px;
+    }
+    body {
+        font-family: 'Inter', sans-serif;
+        overscroll-behavior-y: contain;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .view { display: none; }
+    .view.active { display: flex; }
+    #mic-button.listening { animation: listening-pulse 1.5s infinite; }
+    #scribble-canvas { touch-action: none; }
+  </style>
+</head>
+<body class="bg-background text-foreground no-scrollbar antialiased">
+
+  <div id="app" class="w-full max-w-5xl mx-auto h-screen flex flex-col">
+
+    <!-- Table Selection View -->
+    <div id="table-selection-view" class="view active flex-col h-full animate-fade-in">
+        <header class="p-6 pt-10 pb-4 text-center">
+            <h1 class="text-3xl font-bold text-foreground">Select a Table</h1>
+            <p class="text-muted-foreground mt-1">Choose a table to start a new order.</p>
+        </header>
+        <main id="table-grid" class="flex-grow p-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 overflow-y-auto no-scrollbar">
+            <!-- Table buttons will be generated here by JS -->
+        </main>
+    </div>
+
+    <!-- Order Taking View -->
+    <div id="order-view" class="view hidden flex-col h-screen">
+        <header id="order-view-header" class="flex-shrink-0 p-4 pt-8 bg-background/90 backdrop-blur-sm sticky top-0 z-20">
+            <div class="flex items-center justify-between">
+                <button id="back-to-tables-btn" class="p-2 rounded-lg bg-card text-foreground">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                </button>
+                <div class="text-center">
+                    <h2 class="text-xl font-bold">New Order</h2>
+                    <span id="table-number-display" class="text-sm font-semibold text-muted-foreground">Table #</span>
+                </div>
+                <div class="w-10"></div>
+            </div>
+            <div class="relative flex items-center mt-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 w-5 h-5 text-muted-foreground" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input id="menu-search-input" class="w-full pl-12 pr-4 py-3 rounded-lg bg-card border-none text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-ring focus:outline-none" placeholder="Type to search menu..." type="text">
+            </div>
+            <div class="mt-4">
+                <div id="category-filters" class="flex space-x-3 overflow-x-auto pb-2 no-scrollbar">
+                    <!-- Category buttons generated by JS -->
+                </div>
+            </div>
+        </header>
+        
+        <main id="menu-container" class="flex-grow overflow-y-auto no-scrollbar px-4">
+            <!-- Full menu will be rendered here -->
+        </main>
+
+        <footer class="flex-shrink-0 mt-auto bg-black/90 backdrop-blur-sm z-10 p-4 space-y-4">
+            <div id="cart-container" class="max-h-48 overflow-y-auto no-scrollbar space-y-2">
+                <div class="border-b border-border"></div>
+                <p id="empty-cart-message" class="text-center text-muted-foreground py-4">Cart is empty</p>
+                <div id="cart-items"></div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                 <button id="scribble-btn" class="w-14 h-14 rounded-full bg-card text-foreground flex items-center justify-center flex-shrink-0 transition-transform active:scale-95" aria-label="Open scribble pad">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </button>
+                <button id="mic-button" class="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 transition-transform active:scale-95" aria-label="Use voice to order">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                </button>
+                <button id="submit-order-btn" class="w-full py-4 rounded-lg bg-muted text-muted-foreground font-bold text-lg disabled:opacity-50 transition-all" disabled>
+                    Submit Order
+                </button>
+            </div>
+        </footer>
+    </div>
+  </div>
+
+  <!-- Scribble Pad Modal -->
+  <div id="scribble-modal" class="fixed bottom-4 right-4 z-50 w-80 h-[400px] bg-card border border-border rounded-xl shadow-2xl hidden flex-col animate-fade-in overflow-hidden">
+    <div id="scribble-header" class="flex items-center justify-between p-2 bg-muted/50 cursor-move">
+        <h4 class="text-sm font-semibold text-muted-foreground">Scribble Pad</h4>
+        <button id="close-canvas-btn" class="p-1 rounded-full hover:bg-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+    <canvas id="scribble-canvas" class="flex-grow w-full h-full"></canvas>
+    <div class="flex-shrink-0 flex items-center justify-center p-2 border-t border-border">
+        <button id="clear-canvas-btn" class="py-2 px-4 rounded-lg bg-muted text-muted-foreground font-semibold text-sm">Clear</button>
+    </div>
+  </div>
+
+  <script>
+    // --- CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBiCK1asyca1Hbc_l_HW_z0a-NiCAKE9ps",
+      authDomain: "krishna-e9c59.firebaseapp.com",
+      databaseURL: "https://krishna-e9c59-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "krishna-e9c59",
+      storageBucket: "krishna-e9c59.firebasestorage.app",
+      messagingSenderId: "1048468387337",
+      appId: "1:1048468387337:web:95bd7281d40f8db4b02ad8",
+      measurementId: "G-RXF4SNS526"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    // --- MENU DATA ---
+    const menuCategories = {
+      "Most Popular": [{ name: "Paneer Butter Masala", price: 350, keywords: ["paneer butter masala", "butter paneer"] }, { name: "Dal Makhani", price: 300, keywords: ["dal makhani", "makhani"] }, { name: "Veg Biryani", price: 320, keywords: ["veg biryani", "biryani"] }, { name: "Hara Bhara Kebab", price: 220, keywords: ["hara bhara kebab", "kebab"] }, { name: "Gulab Jamun", price: 120, keywords: ["gulab jamun"] }],
+      "Starters": [{ name: "Paneer Tikka", price: 250, keywords: ["paneer tikka", "tikka"] }, { name: "Hara Bhara Kebab", price: 220, keywords: ["hara bhara kebab", "kebab"] }, { name: "Dahi Ke Kebab", price: 240, keywords: ["dahi ke kebab"] }, { name: "Veg Seekh Kebab", price: 230, keywords: ["veg seekh kebab", "seekh kebab"] }, { name: "Chilli Paneer Dry", price: 260, keywords: ["chilli paneer"] }, { name: "Veg Manchurian Dry", price: 240, keywords: ["veg manchurian", "manchurian"] }],
+      "Soups": [{ name: "Tomato Soup", price: 150, keywords: ["tomato soup"] }, { name: "Manchow Soup", price: 160, keywords: ["manchow soup"] }, { name: "Sweet Corn Soup", price: 160, keywords: ["sweet corn soup"] }, { name: "Hot & Sour Soup", price: 160, keywords: ["hot and sour soup"] }],
+      "Paneer Specials": [{ name: "Paneer Butter Masala", price: 350, keywords: ["paneer butter masala", "butter paneer"] }, { name: "Shahi Paneer", price: 360, keywords: ["shahi paneer"] }, { name: "Kadai Paneer", price: 340, keywords: ["kadai paneer"] }, { name: "Palak Paneer", price: 330, keywords: ["palak paneer"] }, { name: "Paneer Tikka Masala", price: 370, keywords: ["paneer tikka masala"] }, { name: "Matar Paneer", price: 320, keywords: ["matar paneer", "mutter paneer"] }],
+    };
+    const menuData = Object.values(menuCategories).flat();
+    const categories = Object.keys(menuCategories);
+
+    // --- STATE MANAGEMENT ---
+    let state = {
+        selectedTable: null,
+        cart: [], // { name, price, quantity }
+        isListening: false,
+        activeFilter: categories[0],
+    };
+
+    // --- DOM ELEMENTS ---
+    const tableSelectionView = document.getElementById('table-selection-view');
+    const orderView = document.getElementById('order-view');
+    const tableGrid = document.getElementById('table-grid');
+    const backBtn = document.getElementById('back-to-tables-btn');
+    const tableNumDisplay = document.getElementById('table-number-display');
+    const searchInput = document.getElementById('menu-search-input');
+    const menuContainer = document.getElementById('menu-container');
+    const categoryFiltersContainer = document.getElementById('category-filters');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const emptyCartMsg = document.getElementById('empty-cart-message');
+    const micBtn = document.getElementById('mic-button');
+    const submitBtn = document.getElementById('submit-order-btn');
+    const scribbleModal = document.getElementById('scribble-modal');
+    const scribbleBtn = document.getElementById('scribble-btn');
+    const closeCanvasBtn = document.getElementById('close-canvas-btn');
+    const clearCanvasBtn = document.getElementById('clear-canvas-btn');
+    const canvas = document.getElementById('scribble-canvas');
+
+    // --- VOICE RECOGNITION ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = 'en-IN';
+        recognition.interimResults = false;
+        recognition.onstart = () => { state.isListening = true; micBtn.classList.add('listening'); };
+        recognition.onend = () => { state.isListening = false; micBtn.classList.remove('listening'); };
+        recognition.onerror = (event) => console.error('Speech recognition error', event.error);
+        recognition.onresult = (event) => parseVoiceCommand(event.results[0][0].transcript.toLowerCase());
+    } else {
+        micBtn.style.display = 'none';
+    }
+
+    // --- RENDER FUNCTIONS ---
+    function renderTableGrid() {
+        for (let i = 1; i <= 50; i++) {
+            const button = document.createElement('button');
+            button.className = 'p-4 rounded-lg bg-card text-foreground font-bold text-lg flex items-center justify-center aspect-square transition-transform active:scale-95';
+            button.textContent = i;
+            button.dataset.table = i;
+            button.addEventListener('click', () => selectTable(i));
+            tableGrid.appendChild(button);
+        }
+    }
+    
+    function renderCart() {
+        if (state.cart.length === 0) {
+            emptyCartMsg.style.display = 'block';
+            cartItemsContainer.innerHTML = '';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('bg-muted', 'text-muted-foreground');
+            submitBtn.classList.remove('bg-primary', 'text-primary-foreground');
+            submitBtn.textContent = 'Submit Order';
+            return;
+        }
+        emptyCartMsg.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('bg-muted', 'text-muted-foreground');
+        submitBtn.classList.add('bg-primary', 'text-primary-foreground');
+        const total = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        submitBtn.textContent = `Submit Order (₹${total})`;
+
+        cartItemsContainer.innerHTML = state.cart.map((item, index) => `
+            <div class="flex items-center bg-card p-2 rounded-lg animate-slide-in-bottom" style="animation-delay: ${index * 50}ms">
+                <div class="flex-grow">
+                    <p class="font-semibold text-sm">${item.name}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="updateQuantity(${index}, -1)" class="w-7 h-7 rounded-full bg-background text-foreground flex items-center justify-center">-</button>
+                    <span class="font-bold w-4 text-center">${item.quantity}</span>
+                    <button onclick="updateQuantity(${index}, 1)" class="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center">+</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderMenu() {
+        const query = searchInput.value.toLowerCase();
+        menuContainer.innerHTML = '';
+
+        const filteredCategories = Object.entries(menuCategories).reduce((acc, [category, items]) => {
+            const filteredItems = items.filter(item => 
+                fuzzyMatch(item.name, query, 0.4) ||
+                item.keywords.some(k => fuzzyMatch(k, query, 0.4))
+            );
+            if (filteredItems.length > 0) {
+                acc[category] = filteredItems;
+            }
+            return acc;
+        }, {});
+
+        if (Object.keys(filteredCategories).length === 0) {
+            menuContainer.innerHTML = `<div class="text-center text-muted-foreground py-16"><p class="text-lg font-semibold">No food found</p></div>`;
+            return;
+        }
+
+        Object.entries(filteredCategories).forEach(([category, items]) => {
+            const section = document.createElement('section');
+            section.className = 'mb-12';
+            section.setAttribute('data-category', category);
+            
+            section.innerHTML = `
+                <h2 class="text-xl font-bold text-foreground mb-8">${category}</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6">
+                    ${items.map(item => `
+                        <div class="bg-card rounded-xl p-3 flex flex-col cursor-pointer transition-transform active:scale-95" onclick='addToCart({ name: "${item.name}", price: ${item.price} })'>
+                            <div class="flex-grow">
+                                <h4 class="font-semibold text-foreground text-sm">${item.name}</h4>
+                            </div>
+                            <div class="flex justify-between items-center w-full mt-4">
+                                <span class="font-bold text-base text-foreground">₹${item.price}</span>
+                                <div class="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            menuContainer.appendChild(section);
+        });
+    }
+    
+    function renderCategoryFilters() {
+        categoryFiltersContainer.innerHTML = categories.map(category => `
+            <button class="category-filter-btn flex-shrink-0 py-2 px-4 rounded-lg font-semibold transition-colors whitespace-nowrap bg-card text-foreground" data-category="${category}">
+              ${category}
+            </button>
+        `).join('');
+        
+        document.querySelectorAll('.category-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => handleCategoryClick(btn.dataset.category));
+        });
+    }
+
+    // --- LOGIC ---
+    function getBigrams(str) {
+        const bigrams = new Set();
+        if (!str || str.length < 2) return bigrams;
+        for (let i = 0; i < str.length - 1; i++) {
+            bigrams.add(str.substring(i, i + 2));
+        }
+        return bigrams;
+    }
+
+    function fuzzyMatch(str, query, threshold = 0.4) {
+        str = str.toLowerCase();
+        query = query.toLowerCase();
+
+        if (query.length === 0) return true;
+        if (str.includes(query)) return true;
+        if (str.length < 2 || query.length < 2) return false;
+
+        const strBigrams = getBigrams(str);
+        const queryBigrams = getBigrams(query);
+        
+        let intersectionSize = 0;
+        for (const bigram of queryBigrams) {
+            if (strBigrams.has(bigram)) {
+                intersectionSize++;
+            }
+        }
+
+        const score = (2.0 * intersectionSize) / (strBigrams.size + queryBigrams.size);
+        return score >= threshold;
+    }
+    
+    function selectTable(tableNumber) {
+        state.selectedTable = tableNumber;
+        tableNumDisplay.textContent = `Table ${tableNumber}`;
+        tableSelectionView.classList.remove('active');
+        orderView.classList.add('active');
+        renderMenu();
+        updateActiveCategoryButton(categories[0]);
+    }
+
+    function goBackToTables() {
+        state.selectedTable = null;
+        state.cart = [];
+        renderCart();
+        searchInput.value = '';
+        orderView.classList.remove('active');
+        tableSelectionView.classList.add('active');
+    }
+
+    window.addToCart = (item) => {
+        const existing = state.cart.find(i => i.name === item.name);
+        if (existing) existing.quantity++;
+        else state.cart.push({ ...item, quantity: 1 });
+        renderCart();
+    };
+
+    window.updateQuantity = (index, change) => {
+        if (!state.cart[index]) return;
+        state.cart[index].quantity += change;
+        if (state.cart[index].quantity <= 0) state.cart.splice(index, 1);
+        renderCart();
+    };
+    
+    function parseVoiceCommand(transcript) {
+        if (!state.selectedTable) { alert("Please select a table first."); return; }
+        const numberWords = { 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'ek': 1, 'do': 2, 'teen': 3, 'char': 4, 'paanch': 5, 'a': 1 };
+        menuData.forEach(item => {
+            item.keywords.forEach(keyword => {
+                if (transcript.includes(keyword)) {
+                    const regex = new RegExp(`(\\d+|${Object.keys(numberWords).join('|')})\\s+${keyword}`, 'g');
+                    let match; let found = false;
+                    while((match = regex.exec(transcript)) !== null) {
+                        const num = numberWords[match[1]] || parseInt(match[1], 10);
+                        if (!isNaN(num)) { for(let i = 0; i < num; i++) addToCart(item); found = true; }
+                    }
+                    if (!found) addToCart(item);
+                    transcript = transcript.replace(new RegExp(keyword, 'g'), '');
+                }
+            });
+        });
+    }
+    
+    async function submitOrder() {
+        if (state.cart.length === 0 || !state.selectedTable) return;
+        const orderData = {
+            tableNumber: state.selectedTable,
+            items: state.cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
+            total: state.cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
+            status: 'pending', timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+        try {
+            submitBtn.textContent = 'Submitting...'; submitBtn.disabled = true;
+            const ref = database.ref('orders').push();
+            await ref.set({ ...orderData, orderId: ref.key });
+            submitBtn.textContent = 'Submitted!';
+            setTimeout(() => goBackToTables(), 1500);
+        } catch (error) {
+            console.error(error); alert("Failed to submit order.");
+            submitBtn.textContent = `Submit Order (₹${orderData.total})`; submitBtn.disabled = false;
+        }
+    }
+    
+    function handleCategoryClick(category) {
+        const section = document.querySelector(`[data-category="${category}"]`);
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    function updateActiveCategoryButton(activeCategory) {
+        state.activeFilter = activeCategory;
+        document.querySelectorAll('.category-filter-btn').forEach(btn => {
+            const isSelected = btn.dataset.category === activeCategory;
+            btn.classList.toggle('bg-primary', isSelected);
+            btn.classList.toggle('text-primary-foreground', isSelected);
+            btn.classList.toggle('bg-card', !isSelected);
+            btn.classList.toggle('text-foreground', !isSelected);
+            if (isSelected) btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        });
+    }
+
+    // --- SCRIBBLE PAD ---
+    function initScribblePad() {
+        const ctx = canvas.getContext('2d');
+        const header = document.getElementById('scribble-header');
+        let drawing = false;
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        const resize = () => { 
+            canvas.width = canvas.offsetWidth; 
+            canvas.height = canvas.offsetHeight; 
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 3; 
+            ctx.lineCap = 'round';
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+            ctx.shadowBlur = 5;
+        };
+
+        const getPos = e => { 
+            const r = canvas.getBoundingClientRect(); 
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - r.left, y: clientY - r.top };
+        };
+
+        const startDraw = e => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+        const draw = e => { if (!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+        const stopDraw = () => { drawing = false; };
+        
+        const startDrag = (e) => {
+            isDragging = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            offsetX = clientX - scribbleModal.offsetLeft;
+            offsetY = clientY - scribbleModal.offsetTop;
+            window.addEventListener('mousemove', onDrag);
+            window.addEventListener('touchmove', onDrag, { passive: false });
+            window.addEventListener('mouseup', stopDrag);
+            window.addEventListener('touchend', stopDrag);
+        };
+
+        const onDrag = (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            let newX = clientX - offsetX;
+            let newY = clientY - offsetY;
+            const maxX = window.innerWidth - scribbleModal.offsetWidth;
+            const maxY = window.innerHeight - scribbleModal.offsetHeight;
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+            scribbleModal.style.left = `${newX}px`;
+            scribbleModal.style.top = `${newY}px`;
+            scribbleModal.style.bottom = 'auto';
+            scribbleModal.style.right = 'auto';
+        };
+
+        const stopDrag = () => {
+            isDragging = false;
+            window.removeEventListener('mousemove', onDrag);
+            window.removeEventListener('touchmove', onDrag);
+            window.removeEventListener('mouseup', stopDrag);
+            window.removeEventListener('touchend', stopDrag);
+        };
+
+        scribbleBtn.addEventListener('click', () => { scribbleModal.classList.remove('hidden'); scribbleModal.classList.add('flex'); resize(); });
+        closeCanvasBtn.addEventListener('click', () => { scribbleModal.classList.add('hidden'); scribbleModal.classList.remove('flex'); });
+        clearCanvasBtn.addEventListener('click', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+        
+        ['mousedown', 'touchstart'].forEach(e => canvas.addEventListener(e, startDraw));
+        ['mousemove', 'touchmove'].forEach(e => canvas.addEventListener(e, draw));
+        ['mouseup', 'mouseout', 'touchend'].forEach(e => canvas.addEventListener(e, stopDraw));
+        
+        header.addEventListener('mousedown', startDrag);
+        header.addEventListener('touchstart', startDrag);
+        
+        window.addEventListener('resize', resize);
+    }
+
+    // --- INITIALIZATION ---
+    function initApp() {
+        renderTableGrid();
+        renderCart();
+        renderCategoryFilters();
+        initScribblePad();
+        
+        backBtn.addEventListener('click', goBackToTables);
+        searchInput.addEventListener('input', renderMenu);
+        micBtn.addEventListener('click', () => { if (state.isListening || !recognition) return; recognition.start(); });
+        submitBtn.addEventListener('click', submitOrder);
+
+        new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting && e.intersectionRatio > 0.1) {
+                    const cat = e.target.getAttribute('data-category');
+                    if (cat && state.activeFilter !== cat) updateActiveCategoryButton(cat);
+                }
+            });
+        }, { root: menuContainer, rootMargin: "-40% 0px -50% 0px", threshold: 0.1 })
+        .observe(menuContainer);
+        
+        menuContainer.addEventListener('scroll', () => {
+            document.querySelectorAll('#menu-container section').forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const menuRect = menuContainer.getBoundingClientRect();
+                if (rect.top >= menuRect.top && rect.top < menuRect.top + 100) {
+                     const cat = section.getAttribute('data-category');
+                     if(cat !== state.activeFilter) updateActiveCategoryButton(cat);
+                }
+            });
+        });
+
+        console.log("Waiter App Initialized.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
