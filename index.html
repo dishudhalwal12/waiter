@@ -105,7 +105,7 @@
         <header id="order-view-header" class="flex-shrink-0 p-4 pt-8 bg-background/90 backdrop-blur-sm sticky top-0 z-20">
             <div class="flex items-center justify-between">
                 <button id="back-to-tables-btn" class="p-2 rounded-lg bg-card text-foreground">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
                 </button>
                 <div class="text-center">
                     <h2 class="text-xl font-bold">New Order</h2>
@@ -167,24 +167,33 @@
   <script>
     // --- CONFIGURATION ---
     const firebaseConfig = {
-      apiKey: "AIzaSyBiCK1asyca1Hbc_l_HW_z0a-NiCAKE9ps",
-      authDomain: "krishna-e9c59.firebaseapp.com",
-      databaseURL: "https://krishna-e9c59-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "krishna-e9c59",
-      storageBucket: "krishna-e9c59.firebasestorage.app",
-      messagingSenderId: "1048468387337",
-      appId: "1:1048468387337:web:95bd7281d40f8db4b02ad8",
-      measurementId: "G-RXF4SNS526"
-    };
+  apiKey: "AIzaSyBiCK1asyca1Hbc_l_HW_z0a-NiCAKE9ps",
+  authDomain: "krishna-e9c59.firebaseapp.com",
+  databaseURL: "https://krishna-e9c59-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "krishna-e9c59",
+  storageBucket: "krishna-e9c59.firebasestorage.app",
+  messagingSenderId: "1048468387337",
+  appId: "1:1048468387337:web:95bd7281d40f8db4b02ad8",
+  measurementId: "G-RXF4SNS526"
+};
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     
     // --- MENU DATA ---
     const menuCategories = {
-      "Most Popular": [{ name: "Paneer Butter Masala", price: 350, keywords: ["paneer butter masala", "butter paneer"] }, { name: "Dal Makhani", price: 300, keywords: ["dal makhani", "makhani"] }, { name: "Veg Biryani", price: 320, keywords: ["veg biryani", "biryani"] }, { name: "Hara Bhara Kebab", price: 220, keywords: ["hara bhara kebab", "kebab"] }, { name: "Gulab Jamun", price: 120, keywords: ["gulab jamun"] }],
-      "Starters": [{ name: "Paneer Tikka", price: 250, keywords: ["paneer tikka", "tikka"] }, { name: "Hara Bhara Kebab", price: 220, keywords: ["hara bhara kebab", "kebab"] }, { name: "Dahi Ke Kebab", price: 240, keywords: ["dahi ke kebab"] }, { name: "Veg Seekh Kebab", price: 230, keywords: ["veg seekh kebab", "seekh kebab"] }, { name: "Chilli Paneer Dry", price: 260, keywords: ["chilli paneer"] }, { name: "Veg Manchurian Dry", price: 240, keywords: ["veg manchurian", "manchurian"] }],
-      "Soups": [{ name: "Tomato Soup", price: 150, keywords: ["tomato soup"] }, { name: "Manchow Soup", price: 160, keywords: ["manchow soup"] }, { name: "Sweet Corn Soup", price: 160, keywords: ["sweet corn soup"] }, { name: "Hot & Sour Soup", price: 160, keywords: ["hot and sour soup"] }],
-      "Paneer Specials": [{ name: "Paneer Butter Masala", price: 350, keywords: ["paneer butter masala", "butter paneer"] }, { name: "Shahi Paneer", price: 360, keywords: ["shahi paneer"] }, { name: "Kadai Paneer", price: 340, keywords: ["kadai paneer"] }, { name: "Palak Paneer", price: 330, keywords: ["palak paneer"] }, { name: "Paneer Tikka Masala", price: 370, keywords: ["paneer tikka masala"] }, { name: "Matar Paneer", price: 320, keywords: ["matar paneer", "mutter paneer"] }],
+      "Most Popular": [{ name: "Paneer Butter Masala", price: 350, keywords: ["paneer butter masala", "butter paneer", "paneer makhani"] }, { name: "Dal Makhani", price: 300, keywords: ["dal makhani", "makhani dal", "makhani", "dal"] }, { name: "Veg Biryani", price: 320, keywords: ["veg biryani", "vegetable biryani", "biryani"] }, { name: "Hara Bhara Kebab", price: 220, keywords: ["hara bhara kebab", "hara bhara", "veg kebab", "kebab"] }, { name: "Gulab Jamun", price: 120, keywords: ["gulab jamun", "jamun"] }, { name: "Masala Dosa", price: 180, keywords: ["masala dosa", "dosa"] }],
+      "Starters": [{ name: "Paneer Tikka", price: 250, keywords: ["paneer tikka", "tikka"] }, { name: "Dahi Ke Kebab", price: 240, keywords: ["dahi ke kebab", "dahi kebab"] }, { name: "Veg Seekh Kebab", price: 230, keywords: ["veg seekh kebab", "seekh kebab"] }, { name: "Chilli Paneer Dry", price: 260, keywords: ["chilli paneer", "chilly paneer", "chilli"] }, { name: "Veg Manchurian Dry", price: 240, keywords: ["veg manchurian", "manchurian"] }, { name: "Veg Crispy", price: 240, keywords: ["veg crispy", "vegetable crispy", "crispy veg"] }, { name: "Cheese Corn Ball", price: 260, keywords: ["cheese corn ball", "corn cheese balls", "cheese balls"] }, { name: "Paneer 65", price: 270, keywords: ["paneer 65", "paneer sixty five"] }],
+      "Soups": [{ name: "Tomato Soup", price: 150, keywords: ["tomato soup", "tamatar soup"] }, { name: "Manchow Soup", price: 160, keywords: ["manchow soup", "manchow"] }, { name: "Sweet Corn Soup", price: 160, keywords: ["sweet corn soup", "corn soup"] }, { name: "Hot & Sour Soup", price: 160, keywords: ["hot and sour soup", "hot sour"] }],
+      "Paneer Specials": [{ name: "Paneer Butter Masala", price: 350, keywords: ["paneer butter masala", "butter paneer", "paneer makhani"] }, { name: "Shahi Paneer", price: 360, keywords: ["shahi paneer"] }, { name: "Kadai Paneer", price: 340, keywords: ["kadai paneer", "karahi paneer", "kadai"] }, { name: "Palak Paneer", price: 330, keywords: ["palak paneer", "saag paneer", "palak"] }, { name: "Paneer Tikka Masala", price: 370, keywords: ["paneer tikka masala", "tikka masala"] }, { name: "Matar Paneer", price: 320, keywords: ["matar paneer", "mutter paneer", "matar"] }, { name: "Paneer Bhurji", price: 330, keywords: ["paneer bhurji", "scrambled paneer", "bhurji"] }, { name: "Paneer Lababdar", price: 380, keywords: ["paneer lababdar", "lababdar"] }, { name: "Methi Malai Paneer", price: 360, keywords: ["methi malai paneer", "methi mutter malai", "methi malai"] }],
+      "Veggie Delights": [{ name: "Mix Vegetable", price: 280, keywords: ["mix vegetable", "mix veg", "mixed vegetable"] }, { name: "Malai Kofta", price: 350, keywords: ["malai kofta", "kofta"] }, { name: "Aloo Gobi Adraki", price: 260, keywords: ["aloo gobi", "gobi"] }, { name: "Bhindi Masala", price: 270, keywords: ["bhindi masala", "okra masala", "bhindi"] }, { name: "Dum Aloo Kashmiri", price: 300, keywords: ["dum aloo"] }, { name: "Veg Kolhapuri", price: 310, keywords: ["veg kolhapuri", "kolhapuri"] }, { name: "Baingan Bharta", price: 280, keywords: ["baingan bharta", "baingan"] }, { name: "Navratan Korma", price: 360, keywords: ["navratan korma", "korma"] }, { name: "Mushroom Masala", price: 340, keywords: ["mushroom masala", "mushroom"] }, { name: "Kaju Curry", price: 390, keywords: ["kaju curry", "cashew curry", "kaju"] }, { name: "Veg Jalfrezi", price: 320, keywords: ["veg jalfrezi", "jalfrezi"] }],
+      "Dal": [{ name: "Dal Tadka", price: 250, keywords: ["dal tadka", "yellow dal", "tadka dal"] }, { name: "Dal Palak", price: 260, keywords: ["dal palak", "palak dal"] }, { name: "Chole Masala", price: 280, keywords: ["chole masala", "chana masala", "chole"] }, { name: "Dal Fry", price: 240, keywords: ["dal fry"] }, { name: "Panchmel Dal", price: 270, keywords: ["panchmel dal", "panchratna dal"] }],
+      "South Indian": [{ name: "Idli Sambar", price: 140, keywords: ["idli sambar", "idli"] }, { name: "Plain Dosa", price: 150, keywords: ["plain dosa", "sada dosa"] }, { name: "Onion Uttapam", price: 190, keywords: ["onion uttapam", "uttapam"] }, { name: "Rava Dosa", price: 190, keywords: ["rava dosa"] }, { name: "Vada Sambar", price: 150, keywords: ["vada sambar", "medu vada", "vada"] }],
+      "Chinese Corner": [{ name: "Gobi Manchurian Gravy", price: 280, keywords: ["gobi manchurian", "cauliflower manchurian"] }, { name: "Veg Hakka Noodles", price: 250, keywords: ["hakka noodles", "noodles", "veg noodles"] }, { name: "Spring Roll", price: 220, keywords: ["spring roll", "roll"] }, { name: "Chilli Potato", price: 230, keywords: ["chilli potato", "chilly potato", "honey chilli potato"] }, { name: "Veg Fried Rice", price: 240, keywords: ["veg fried rice", "fried rice"] }],
+      "Rice & Biryani": [{ name: "Steamed Rice", price: 180, keywords: ["steamed rice", "plain rice", "sada chawal", "rice"] }, { name: "Jeera Rice", price: 200, keywords: ["jeera rice", "cumin rice"] }, { name: "Veg Pulao", price: 280, keywords: ["veg pulao", "pulao"] }, { name: "Peas Pulao", price: 250, keywords: ["peas pulao", "matar pulao"] }, { name: "Kashmiri Pulao", price: 330, keywords: ["kashmiri pulao"] }, { name: "Curd Rice", price: 210, keywords: ["curd rice"] }],
+      "Breads": [{ name: "Butter Naan", price: 70, keywords: ["butter naan", "naan"] }, { name: "Tandoori Roti", price: 50, keywords: ["tandoori roti", "roti"] }, { name: "Garlic Naan", price: 80, keywords: ["garlic naan"] }, { name: "Lachha Paratha", price: 80, keywords: ["lachha paratha", "paratha"] }, { name: "Missi Roti", price: 60, keywords: ["missi roti"] }, { name: "Stuffed Kulcha", price: 100, keywords: ["stuffed kulcha", "aloo kulcha", "kulcha"] }, { name: "Roomali Roti", price: 60, keywords: ["roomali roti"] }, { name: "Aloo Paratha", price: 110, keywords: ["aloo paratha"] }],
+      "Thalis & Combos": [{ name: "Special Veg Thali", price: 450, keywords: ["special thali", "veg thali", "thali"] }, { name: "Dal Makhani Rice Bowl", price: 350, keywords: ["dal makhani bowl", "rice bowl"] }, { name: "Chole Bhature", price: 300, keywords: ["chole bhature", "bhature"] }, { name: "Punjabi Thali", price: 480, keywords: ["punjabi thali"] }],
+      "Desserts": [{ name: "Gulab Jamun", price: 120, keywords: ["gulab jamun"] }, { name: "Rasmalai", price: 150, keywords: ["rasmalai"] }, { name: "Gajar Ka Halwa", price: 180, keywords: ["gajar halwa", "carrot halwa"] }, { name: "Kulfi Falooda", price: 200, keywords: ["kulfi falooda", "kulfi"] }, { name: "Ice Cream", price: 100, keywords: ["ice cream"] }, { name: "Moong Dal Halwa", price: 190, keywords: ["moong dal halwa"] }, { name: "Rasgulla", price: 130, keywords: ["rasgulla"] }, { name: "Jalebi", price: 160, keywords: ["jalebi"] }],
+      "Beverages": [{ name: "Masala Chaas", price: 80, keywords: ["masala chaas", "buttermilk", "chaas"] }, { name: "Sweet Lassi", price: 120, keywords: ["sweet lassi", "lassi"] }, { name: "Fresh Lime Soda", price: 90, keywords: ["lime soda", "nimbu pani", "soda"] }, { name: "Mineral Water", price: 40, keywords: ["mineral water", "water bottle", "water", "paani"] }, { name: "Soft Drinks", price: 60, keywords: ["soft drink", "coke", "pepsi"] }, { name: "Jal Jeera", price: 70, keywords: ["jal jeera", "jaljeera"] }, { name: "Mango Lassi", price: 140, keywords: ["mango lassi"] }],
     };
     const menuData = Object.values(menuCategories).flat();
     const categories = Object.keys(menuCategories);
@@ -221,13 +230,38 @@
     let recognition;
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
-        recognition.continuous = false;
+        recognition.continuous = true; // Keep listening
         recognition.lang = 'en-IN';
         recognition.interimResults = false;
-        recognition.onstart = () => { state.isListening = true; micBtn.classList.add('listening'); };
-        recognition.onend = () => { state.isListening = false; micBtn.classList.remove('listening'); };
-        recognition.onerror = (event) => console.error('Speech recognition error', event.error);
-        recognition.onresult = (event) => parseVoiceCommand(event.results[0][0].transcript.toLowerCase());
+
+        recognition.onstart = () => { 
+            state.isListening = true; 
+            micBtn.classList.add('listening'); 
+        };
+
+        recognition.onend = () => { 
+            state.isListening = false; 
+            micBtn.classList.remove('listening'); 
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error', event.error);
+            state.isListening = false; 
+            micBtn.classList.remove('listening'); 
+        };
+
+        recognition.onresult = (event) => {
+            let final_transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    final_transcript += event.results[i][0].transcript;
+                }
+            }
+            if (final_transcript) {
+                console.log("Voice command: ", final_transcript);
+                parseVoiceCommand(final_transcript.toLowerCase().trim());
+            }
+        };
     } else {
         micBtn.style.display = 'none';
     }
@@ -304,7 +338,7 @@
                 <h2 class="text-xl font-bold text-foreground mb-8">${category}</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6">
                     ${items.map(item => `
-                        <div class="bg-card rounded-xl p-3 flex flex-col cursor-pointer transition-transform active:scale-95" onclick='addToCart({ name: "${item.name}", price: ${item.price} })'>
+                        <div class="bg-card rounded-xl p-3 flex flex-col cursor-pointer transition-transform active:scale-95" onclick='addToCart({ name: "${item.name.replace(/"/g, '&quot;')}", price: ${item.price} })'>
                             <div class="flex-grow">
                                 <h4 class="font-semibold text-foreground text-sm">${item.name}</h4>
                             </div>
@@ -399,19 +433,47 @@
     };
     
     function parseVoiceCommand(transcript) {
-        if (!state.selectedTable) { alert("Please select a table first."); return; }
-        const numberWords = { 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'ek': 1, 'do': 2, 'teen': 3, 'char': 4, 'paanch': 5, 'a': 1 };
-        menuData.forEach(item => {
+        if (!state.selectedTable) {
+            alert("Please select a table first.");
+            return;
+        }
+        const numberWords = { 'one': 1, 'two': 2, 'to': 2, 'three': 3, 'four': 4, 'for': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10, 'ek': 1, 'do': 2, 'teen': 3, 'char': 4, 'paanch': 5, 'a': 1 };
+        const numberWordsRegex = `(\\d+|${Object.keys(numberWords).join('|')})`;
+
+        const sortedMenuData = [...menuData].sort((a, b) => {
+            const maxA = Math.max(...a.keywords.map(k => k.length));
+            const maxB = Math.max(...b.keywords.map(k => k.length));
+            return maxB - maxA;
+        });
+
+        let remainingTranscript = transcript;
+
+        sortedMenuData.forEach(item => {
             item.keywords.forEach(keyword => {
-                if (transcript.includes(keyword)) {
-                    const regex = new RegExp(`(\\d+|${Object.keys(numberWords).join('|')})\\s+${keyword}`, 'g');
-                    let match; let found = false;
-                    while((match = regex.exec(transcript)) !== null) {
-                        const num = numberWords[match[1]] || parseInt(match[1], 10);
-                        if (!isNaN(num)) { for(let i = 0; i < num; i++) addToCart(item); found = true; }
+                const keywordPattern = `(${numberWordsRegex}\\s+)?${keyword}s?`;
+                const regex = new RegExp(keywordPattern, 'gi');
+                
+                let match;
+                while ((match = regex.exec(remainingTranscript)) !== null) {
+                    const quantityStr = match[2];
+                    let quantity = 1;
+
+                    if (quantityStr) {
+                        quantity = numberWords[quantityStr.toLowerCase()] || parseInt(quantityStr, 10);
                     }
-                    if (!found) addToCart(item);
-                    transcript = transcript.replace(new RegExp(keyword, 'g'), '');
+                    
+                    if (!isNaN(quantity) && quantity > 0) {
+                        console.log(`Matched: '${match[0]}'. Adding ${quantity} of ${item.name}`);
+                        for (let i = 0; i < quantity; i++) {
+                            addToCart(item);
+                        }
+                        
+                        remainingTranscript = remainingTranscript.substring(0, match.index) +
+                                            '#'.repeat(match[0].length) +
+                                            remainingTranscript.substring(match.index + match[0].length);
+                        
+                        regex.lastIndex = 0; 
+                    }
                 }
             });
         });
@@ -419,11 +481,18 @@
     
     async function submitOrder() {
         if (state.cart.length === 0 || !state.selectedTable) return;
+        const subtotal = state.cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        const tax = subtotal * 0.10;
+        const grandTotal = subtotal + tax;
+
         const orderData = {
             tableNumber: state.selectedTable,
             items: state.cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
-            total: state.cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
-            status: 'pending', timestamp: firebase.database.ServerValue.TIMESTAMP
+            subtotal: subtotal,
+            tax: tax,
+            total: grandTotal,
+            status: 'pending', 
+            timestamp: firebase.database.ServerValue.TIMESTAMP
         };
         try {
             submitBtn.textContent = 'Submitting...'; submitBtn.disabled = true;
@@ -433,7 +502,7 @@
             setTimeout(() => goBackToTables(), 1500);
         } catch (error) {
             console.error(error); alert("Failed to submit order.");
-            submitBtn.textContent = `Submit Order (₹${orderData.total})`; submitBtn.disabled = false;
+            submitBtn.textContent = `Submit Order (₹${grandTotal})`; submitBtn.disabled = false;
         }
     }
     
@@ -543,7 +612,14 @@
         
         backBtn.addEventListener('click', goBackToTables);
         searchInput.addEventListener('input', renderMenu);
-        micBtn.addEventListener('click', () => { if (state.isListening || !recognition) return; recognition.start(); });
+        micBtn.addEventListener('click', () => {
+            if (!recognition) return;
+            if (state.isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
         submitBtn.addEventListener('click', submitOrder);
 
         new IntersectionObserver(entries => {
